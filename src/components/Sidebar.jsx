@@ -1,15 +1,16 @@
 import React from 'react';
-import { Package, Store, Users } from 'lucide-react';
+import { Package, Store, Users, BarChart3, LogOut } from 'lucide-react';
 
 const tabs = [
   { key: 'models', label: 'Model Management', icon: Package },
   { key: 'dealers', label: 'Dealer Management', icon: Store },
   { key: 'customers', label: 'Customer Management', icon: Users },
+  { key: 'profile', label: 'Profile & Statistics', icon: BarChart3 },
 ];
 
-export default function Sidebar({ active, onChange }) {
+export default function Sidebar({ active, onChange, onLogout }) {
   return (
-    <aside className="h-full w-full md:w-64 bg-gradient-to-b from-zinc-900 to-black text-zinc-100 border-r border-zinc-800">
+    <aside className="h-full w-full md:w-64 bg-gradient-to-b from-zinc-900 to-black text-zinc-100 border-r border-zinc-800 flex flex-col">
       <div className="px-5 py-6">
         <div className="text-2xl font-semibold tracking-tight">
           <span className="bg-gradient-to-r from-emerald-400 to-green-600 bg-clip-text text-transparent">Farm@KinG</span>
@@ -34,10 +35,16 @@ export default function Sidebar({ active, onChange }) {
           );
         })}
       </nav>
-      <div className="mt-auto p-4 hidden md:block">
-        <div className="rounded-xl bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-500/20 p-4">
+      <div className="mt-auto p-4 flex flex-col gap-3">
+        <div className="rounded-xl bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-500/20 p-4 hidden md:block">
           <p className="text-xs text-zinc-400">Manage models, dealers and customers, with instant profit insights.</p>
         </div>
+        {onLogout && (
+          <button onClick={onLogout} className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 transition">
+            <LogOut size={16} className="text-zinc-300" />
+            <span className="text-sm text-zinc-300">Logout</span>
+          </button>
+        )}
       </div>
     </aside>
   );

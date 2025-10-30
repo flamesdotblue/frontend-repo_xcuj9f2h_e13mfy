@@ -3,41 +3,38 @@ import Sidebar from './components/Sidebar.jsx';
 import ModelsSection from './components/ModelsSection.jsx';
 import DealersSection from './components/DealersSection.jsx';
 import CustomersSection from './components/CustomersSection.jsx';
+import ProfileSection from './components/ProfileSection.jsx';
 import Spline from '@splinetool/react-spline';
 
 const USERNAME = 'Farm@KinGAut0mat1on';
 const PASSWORD = 'Farma@2007#$';
 
-const LS_MODELS = 'fk_models';
-const LS_DEALERS = 'fk_dealers';
 const LS_AUTH = 'fk_auth';
 
-function useLocalArray(key) {
-  const [data, setData] = useState(() => {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const refresh = () => {
-    try {
-      const raw = localStorage.getItem(key);
-      setData(raw ? JSON.parse(raw) : []);
-    } catch {
-      setData([]);
-    }
-  };
+function ToastCenter() {
+  const [toasts, setToasts] = useState([]);
 
   useEffect(() => {
-    const handler = () => refresh();
-    window.addEventListener('fk:data-updated', handler);
-    return () => window.removeEventListener('fk:data-updated', handler);
+    const handler = (e) => {
+      const toast = typeof e.detail === 'string' ? { id: crypto.randomUUID(), msg: e.detail, type: 'success' } : { id: crypto.randomUUID(), ...e.detail };
+      setToasts((prev) => [...prev, toast]);
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== toast.id));
+      }, toast.duration || 2500);
+    };
+    window.addEventListener('fk:toast', handler);
+    return () => window.removeEventListener('fk:toast', handler);
   }, []);
 
-  return [data, refresh];
+  return (
+    <div className="pointer-events-none fixed top-4 right-4 z-[60] space-y-2">
+      {toasts.map((t) => (
+        <div key={t.id} className={`pointer-events-auto px-4 py-2 rounded-lg shadow-lg text-sm ${t.type === 'error' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'} animate-in fade-in slide-in-from-right-4`}>
+          {t.msg}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function App() {
@@ -47,18 +44,25 @@ export default function App() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const [models] = useLocalArray(LS_MODELS);
-  const [dealers] = useLocalArray(LS_DEALERS);
-
   const handleLogin = (e) => {
     e.preventDefault();
     if (username === USERNAME && password === PASSWORD) {
       localStorage.setItem(LS_AUTH, 'true');
       setAuthed(true);
       setError('');
+      window.dispatchEvent(new CustomEvent('fk:toast', { detail: { msg: 'Welcome back!', type: 'success' } }));
     } else {
       setError('Invalid credentials.');
+      window.dispatchEvent(new CustomEvent('fk:toast', { detail: { msg: 'Invalid credentials', type: 'error' } }));
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem(LS_AUTH);
+    setAuthed(false);
+    setUsername('');
+    setPassword('');
+    setTab('models');
   };
 
   if (!authed) {
@@ -94,13 +98,13 @@ export default function App() {
             </p>
           </form>
         </div>
+        <ToastCenter />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-950 to-black text-zinc-100">
-      {/* Hero cover with Spline */}
       <div className="relative h-64 w-full">
         <Spline scene="https://prod.spline.design/LU2mWMPbF3Qi1Qxh/scene.splinecode" style={{ width: '100%', height: '100%' }} />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-black" />
@@ -116,15 +120,15 @@ export default function App() {
       </div>
 
       <div className="grid md:grid-cols-[16rem_1fr] gap-0 min-h-[calc(100vh-16rem)]">
-        <Sidebar active={tab} onChange={setTab} />
+        <Sidebar active={tab} onChange={setTab} onLogout={handleLogout} />
         <main className="p-6 md:p-8 space-y-8">
           {tab === 'models' && <ModelsSection />}
           {tab === 'dealers' && <DealersSection />}
-          {tab === 'customers' && (
-            <CustomersSection models={models} dealers={dealers} />
-          )}
+          {tab === 'customers' && <CustomersSection />}
+          {tab === 'profile' && <ProfileSection />}
         </main>
       </div>
+      <ToastCenter />
     </div>
   );
 }
