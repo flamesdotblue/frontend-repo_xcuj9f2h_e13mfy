@@ -1,131 +1,64 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import Sidebar from './components/Sidebar.jsx';
-import LoginScreen from './components/LoginScreen.jsx';
-import SecurityWarning from './components/SecurityWarning.jsx';
-import Dashboard from './components/Dashboard.jsx';
-
-// Toast Center
-function ToastCenter() {
-  const [toasts, setToasts] = useState([]);
-  useEffect(() => {
-    function onToast(e) {
-      const id = crypto.randomUUID();
-      const t = { id, msg: e.detail?.msg || '', type: e.detail?.type || 'success' };
-      setToasts((prev) => [...prev, t]);
-      setTimeout(() => setToasts((prev) => prev.filter(x => x.id !== id)), 2500);
-    }
-    window.addEventListener('fk:toast', onToast);
-    return () => window.removeEventListener('fk:toast', onToast);
-  }, []);
-  return (
-    <div className="fixed top-4 right-4 z-[60] space-y-2">
-      {toasts.map(t => (
-        <div key={t.id} className={`px-4 py-2 rounded-lg shadow text-sm border ${t.type === 'error' ? 'bg-rose-600/20 border-rose-400/30 text-rose-200' : 'bg-emerald-600/20 border-emerald-400/30 text-emerald-200'}`}>{t.msg}</div>
-      ))}
-    </div>
-  );
-}
-
-// Basic devtools detection heuristic
-function useDevtoolsGuard(onDetected) {
-  useEffect(() => {
-    let detected = false;
-    function check() {
-      const threshold = 160;
-      const opened = (window.outerWidth - window.innerWidth > threshold) || (window.outerHeight - window.innerHeight > threshold);
-      // eslint-disable-next-line no-console
-      if (opened && !detected) { detected = true; onDetected?.(); }
-    }
-    const i = setInterval(check, 800);
-    return () => clearInterval(i);
-  }, [onDetected]);
-}
-
-function disableEval() {
-  try {
-    Object.defineProperty(window, 'eval', { value: () => { throw new Error('eval is disabled'); }, writable: false });
-  } catch {}
-}
-
-function readSession() {
-  try { return JSON.parse(localStorage.getItem('fk_session') || 'null'); } catch { return null; }
-}
+import React, { useEffect, useMemo, useState } from 'react';
+import Hero3D from './components/Hero3D';
+import LoginScreen from './components/LoginScreen';
+import Sidebar from './components/Sidebar';
+import Dashboard from './components/Dashboard';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('models');
-  const [session, setSession] = useState(() => readSession());
-  const [warning, setWarning] = useState(false);
-
-  // Remove hero: Start directly with content layout
-
-  // Security protections
-  useDevtoolsGuard(() => {
-    setWarning(true);
-    // Clear session if any
-    localStorage.removeItem('fk_session');
-    setSession(null);
+  const [session, setSession] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('fk_session')); } catch { return null; }
   });
-  useEffect(() => { disableEval(); }, []);
+  const [active, setActive] = useState('profile');
 
-  // Inactivity auto-logout (15 minutes)
+  // Session expiry auto-logout (15m)
   useEffect(() => {
-    function getExp() { return Number(readSession()?.exp || 0); }
-    function updateActivity() {
-      const s = readSession();
-      if (!s) return;
-      const exp = Date.now() + 15 * 60 * 1000;
-      const next = { ...s, exp };
-      localStorage.setItem('fk_session', JSON.stringify(next));
-    }
-    const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
-    events.forEach(ev => window.addEventListener(ev, updateActivity));
-    const i = setInterval(() => {
-      const exp = getExp();
-      if (exp && Date.now() > exp) {
-        localStorage.removeItem('fk_session');
-        setSession(null);
-        window.dispatchEvent(new CustomEvent('fk:toast', { detail: { msg: 'Session timed out', type: 'error' } }));
-      }
+    const t = setInterval(() => {
+      const raw = localStorage.getItem('fk_session');
+      if (!raw) return;
+      try {
+        const s = JSON.parse(raw);
+        if (s.exp && Date.now() > s.exp) {
+          localStorage.removeItem('fk_session');
+          setSession(null);
+        }
+      } catch {}
     }, 1000);
-    return () => {
-      events.forEach(ev => window.removeEventListener(ev, updateActivity));
-      clearInterval(i);
-    };
+    return () => clearInterval(t);
   }, []);
 
-  function handleAuthenticated(next) {
-    setSession(next);
-  }
+  const loggedIn = useMemo(() => Boolean(session), [session]);
 
   function handleLogout() {
     localStorage.removeItem('fk_session');
     setSession(null);
   }
 
-  if (warning) {
-    return <SecurityWarning onBack={() => setWarning(false)} />;
-  }
-
-  if (!session) {
-    return (
-      <>
-        <LoginScreen onAuthenticated={handleAuthenticated} />
-        <ToastCenter />
-      </>
-    );
-  }
+  if (!loggedIn) return <LoginScreen onLogin={setSession} />;
 
   return (
-    <div className="min-h-screen bg-[#070b13] text-white">
-      <div className="grid grid-cols-1 md:grid-cols-[16rem_1fr] min-h-screen">
-        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} onLogout={handleLogout} />
-        <main className="bg-gradient-to-b from-transparent to-white/[0.03]"> 
-          <div className="max-w-7xl mx-auto">
-            <Dashboard activeTab={activeTab} />
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black text-slate-200">
+      <header className="sticky top-0 z-20 backdrop-blur bg-slate-950/50 border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-emerald-500/20 border border-emerald-400/30" />
+            <div>
+              <div className="text-xs text-slate-400 leading-tight">FarmaKing</div>
+              <div className="text-white font-semibold leading-tight">Automation Dashboard</div>
+            </div>
           </div>
-        </main>
-      </div>
-      <ToastCenter />
+          <div className="text-xs text-slate-400">Secure • Single user</div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-[16rem,1fr] gap-6">
+        <Sidebar active={active} onChange={setActive} onLogout={handleLogout} />
+        <div className="space-y-6">
+          <Hero3D />
+          <div className="rounded-xl border border-white/10 bg-slate-950/50 p-4">
+            <Dashboard />
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

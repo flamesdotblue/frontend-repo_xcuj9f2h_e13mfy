@@ -1,44 +1,42 @@
 import React from 'react';
-import { Home, User, Settings, BarChart3, Boxes } from 'lucide-react';
+import { LayoutGrid, Package, Users, User, LogOut } from 'lucide-react';
 
-export default function Sidebar({ activeTab, onTabChange, onLogout }) {
-  const tabs = [
-    { key: 'models', label: 'Model Management', icon: Boxes },
-    { key: 'dealers', label: 'Dealer Management', icon: User },
-    { key: 'customers', label: 'Customer Management', icon: Home },
-    { key: 'profile', label: 'Profile & Statistics', icon: BarChart3 },
+export default function Sidebar({ active, onChange, onLogout }) {
+  const items = [
+    { key: 'profile', label: 'Profile', icon: LayoutGrid },
+    { key: 'models', label: 'Models', icon: Package },
+    { key: 'dealers', label: 'Dealers', icon: Users },
+    { key: 'customers', label: 'Customers', icon: User },
   ];
 
   return (
-    <aside className="h-full w-full md:w-64 bg-[#0b0f1a]/90 backdrop-blur border-r border-white/10 text-white flex flex-col">
-      <div className="px-5 py-4 border-b border-white/10">
-        <div className="text-xl font-semibold tracking-wide">Farm@KinG</div>
-        <div className="text-xs text-white/60">Automation Dashboard</div>
+    <aside className="h-full w-64 hidden md:flex flex-col border-r border-white/10 bg-slate-950/60">
+      <div className="p-4 border-b border-white/10">
+        <div className="text-sm text-slate-400">FarmaKing</div>
+        <div className="text-lg font-semibold text-white">Automation</div>
       </div>
-
-      <nav className="flex-1 overflow-y-auto py-2">
-        {tabs.map(({ key, label, icon: Icon }) => (
+      <nav className="flex-1 p-2 space-y-1">
+        {items.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
-            onClick={() => onTabChange(key)}
-            className={`w-full flex items-center gap-3 px-4 py-3 text-left transition rounded-md mx-3 my-1 ${
-              activeTab === key
-                ? 'bg-white/10 text-white shadow-inner'
-                : 'text-white/70 hover:text-white hover:bg-white/5'
+            onClick={() => onChange(key)}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition text-left border ${
+              active === key
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                : 'bg-transparent border-transparent text-slate-300 hover:bg-white/5 hover:text-white'
             }`}
           >
-            <Icon size={18} />
-            <span className="text-sm">{label}</span>
+            <Icon className="h-5 w-5" />
+            <span className="text-sm font-medium">{label}</span>
           </button>
         ))}
       </nav>
-
-      <div className="p-4 border-t border-white/10">
+      <div className="p-3 border-t border-white/10">
         <button
           onClick={onLogout}
-          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-gradient-to-r from-rose-600 to-pink-600 text-white font-medium shadow hover:shadow-lg hover:brightness-110 transition"
+          className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-200 transition"
         >
-          <Settings size={16} /> Logout
+          <LogOut className="h-5 w-5" /> Logout
         </button>
       </div>
     </aside>
