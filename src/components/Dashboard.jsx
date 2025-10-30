@@ -279,7 +279,7 @@ function CustomersSection({ models, dealers, customers, onChange }) {
     if (!dealerId) return Number(model.directPrice || 0);
     const dealer = dealers.find(d => d.id === dealerId);
     const custom = dealer?.prices?.[modelId];
-    return Number(custom ?? model.dealerPrice || 0);
+    return Number(custom ?? model.dealerPrice ?? 0);
   }
 
   function handleSave() {
@@ -390,7 +390,7 @@ function CustomersSection({ models, dealers, customers, onChange }) {
           </div>
 
           <div className="text-sm text-white/70">
-            Selling Price Preview: {inr.format(form.modelId ? (form.dealerId ? (dealers.find(d=>d.id===form.dealerId)?.prices?.[form.modelId] ?? models.find(m=>m.id===form.modelId)?.dealerPrice) : models.find(m=>m.id===form.modelId)?.directPrice) || 0 : 0)}
+            Selling Price Preview: {inr.format(form.modelId ? ((form.dealerId ? (dealers.find(d=>d.id===form.dealerId)?.prices?.[form.modelId] ?? models.find(m=>m.id===form.modelId)?.dealerPrice) : models.find(m=>m.id===form.modelId)?.directPrice) ?? 0) : 0)}
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
