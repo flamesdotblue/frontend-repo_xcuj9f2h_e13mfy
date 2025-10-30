@@ -54,8 +54,11 @@ function Modal({ open, onClose, children, title }) {
   );
 }
 
-export default function Dashboard() {
-  const [active, setActive] = useState('profile');
+export default function Dashboard({ active: activeProp, onChange }) {
+  const [internalActive, setInternalActive] = useState('profile');
+  const active = activeProp ?? internalActive;
+  const setActive = onChange ?? setInternalActive;
+
   const [models, setModels] = useStorage('fk_models');
   const [dealers, setDealers] = useStorage('fk_dealers');
   const [customers, setCustomers] = useStorage('fk_customers');
@@ -338,18 +341,20 @@ function Form({ type, item, onSubmit }) {
     onSubmit(form);
   }
 
+  const inputCls = 'w-full px-3 py-2 rounded-lg bg-slate-950/70 border border-white/10 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60';
+
   if (type === 'models') {
     return (
       <form onSubmit={submit} className="space-y-3">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <Field label="Model Name">
-            <input value={form.name || ''} onChange={(e) => update('name', e.target.value)} className="input" placeholder="e.g. FK-200" />
+            <input value={form.name || ''} onChange={(e) => update('name', e.target.value)} className={inputCls} placeholder="e.g. FK-200" />
           </Field>
           <Field label="SKU">
-            <input value={form.sku || ''} onChange={(e) => update('sku', e.target.value)} className="input" placeholder="e.g. SKU-200" />
+            <input value={form.sku || ''} onChange={(e) => update('sku', e.target.value)} className={inputCls} placeholder="e.g. SKU-200" />
           </Field>
           <Field label="Dealer Price (₹)">
-            <input type="number" value={form.dealerPrice || ''} onChange={(e) => update('dealerPrice', Number(e.target.value))} className="input" placeholder="0" />
+            <input type="number" value={form.dealerPrice || ''} onChange={(e) => update('dealerPrice', Number(e.target.value))} className={inputCls} placeholder="0" />
           </Field>
         </div>
         <Footer />
@@ -362,13 +367,13 @@ function Form({ type, item, onSubmit }) {
       <form onSubmit={submit} className="space-y-3">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <Field label="Dealer Name">
-            <input value={form.name || ''} onChange={(e) => update('name', e.target.value)} className="input" placeholder="Dealer name" />
+            <input value={form.name || ''} onChange={(e) => update('name', e.target.value)} className={inputCls} placeholder="Dealer name" />
           </Field>
           <Field label="Phone">
-            <input value={form.phone || ''} onChange={(e) => update('phone', e.target.value)} className="input" placeholder="Phone number" />
+            <input value={form.phone || ''} onChange={(e) => update('phone', e.target.value)} className={inputCls} placeholder="Phone number" />
           </Field>
           <Field label="City">
-            <input value={form.city || ''} onChange={(e) => update('city', e.target.value)} className="input" placeholder="City" />
+            <input value={form.city || ''} onChange={(e) => update('city', e.target.value)} className={inputCls} placeholder="City" />
           </Field>
         </div>
         <Footer />
@@ -381,13 +386,13 @@ function Form({ type, item, onSubmit }) {
     <form onSubmit={submit} className="space-y-3">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <Field label="Customer Name">
-          <input value={form.name || ''} onChange={(e) => update('name', e.target.value)} className="input" placeholder="Customer name" />
+          <input value={form.name || ''} onChange={(e) => update('name', e.target.value)} className={inputCls} placeholder="Customer name" />
         </Field>
         <Field label="Model">
-          <input value={form.model || ''} onChange={(e) => update('model', e.target.value)} className="input" placeholder="Model name" />
+          <input value={form.model || ''} onChange={(e) => update('model', e.target.value)} className={inputCls} placeholder="Model name" />
         </Field>
         <Field label="Selling Price (₹)">
-          <input type="number" value={form.sellingPrice || ''} onChange={(e) => update('sellingPrice', Number(e.target.value))} className="input" placeholder="0" />
+          <input type="number" value={form.sellingPrice || ''} onChange={(e) => update('sellingPrice', Number(e.target.value))} className={inputCls} placeholder="0" />
         </Field>
       </div>
       <Footer />

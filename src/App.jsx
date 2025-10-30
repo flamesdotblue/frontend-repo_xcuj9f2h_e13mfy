@@ -55,7 +55,7 @@ export default function App() {
         <div className="space-y-6">
           <Hero3D />
           <div className="rounded-xl border border-white/10 bg-slate-950/50 p-4">
-            <Dashboard />
+            <Dashboard active={active} onChange={setActive} />
           </div>
         </div>
       </main>
